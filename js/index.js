@@ -50,15 +50,34 @@ $("#payment").change(function(e) {
 $('#submitButton').click(function(e) {
     e.preventDefault(); //stops default action of submit button 
     let dataElements = $('#name, #mail, #title, #size, #design, #color');
+    let checkedCheckboxes = $(".activities input:checked");
+    let activityEl = $(".activities");
+    //console.log(checkedCheckboxes);
+    //console.log(checkedCheckboxes.length);
+    
+    // checkedCheckboxes.each();
+    
+    let formIsValid = true;
+
     dataElements.each(function(){
         let el = $(this);
         let id = el.attr("id"); //what the id is
         let val = el.val(); //what the user wrote
         let validator = validationObj[id]; // accessing piece of an object 
-        validator ? validator(val, el) : null; // out of the data, get value of id and get into line 64 object to see if property matches the id of the thing we found. If it exists, call function with value via ternerary operator
-        console.log($(this).attr("id"));
-        console.log($(this).val());
+        let thisIsValid = validator ? validator(val, el) : true; // out of the data, get value of id and get into the object to see if property matches the id of the thing we found. If it exists, call function with value via ternerary operator
+        //if the function is found, then call it
+        
+        //console.log($(this).attr("id"));
+        //console.log($(this).val());
+        
+        if (!thisIsValid) {
+            formIsValid = false;
+        }
     });
+    if (!validationObj.checkBoxes(checkedCheckboxes, activityEl)) {
+        formIsValid = false;
+    }
+    console.log("form is valid:", formIsValid);
 });
 
 //called on line 57
@@ -68,36 +87,37 @@ let validationObj = {
         console.log("checking to see if is valid");
         if(typeof val == "string" && val.length > 0){
             el.removeClass('error');
+            return true;
         } else {
             el.addClass('error');
+            return false;
         }
     }, 
     mail: function(val, el){
         console.log("checking to see if mail is valid");
-//         bool isValid = false;
-
-// try
-// {
-//     MailAddress address = new MailAddress(emailAddress);
-//     isValid = (address.Address == emailAddress);
-//     // or
-//     // isValid = string.IsNullOrEmpty(address.DisplayName);
-// }
-// catch (FormatException)
-// {
-//     // address is invalid
-}
-        if(typeof val == "string" && val.length > 0){
+        if (validateEmail(val)){
             el.removeClass('error');
+            return true;
         } else {
             el.addClass('error');
+            return false;
+        }
+    },
+    // @# CREDIT CARD VALIDATION  
+    checkBoxes: function(boxes, activityEl) {
+        if(boxes.length == 0) {
+            activityEl.addClass('error');
+            return false;
+        } else {
+            activityEl.removeClass('error');
+            return true;
         }
     }
 }
 
-
-
-
-
-
+//validates email address with regex - copied and pasted this specific line from: https://stackoverflow.com/questions/46155/how-to-validate-an-email-address-in-javascript 
+function validateEmail(email) {
+    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+}
 
