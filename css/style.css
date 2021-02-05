@@ -8,6 +8,10 @@
   box-sizing: border-box;
 }
 
+.errorMessage {
+	color: red;
+}
+
 body,
 input,
 button {
