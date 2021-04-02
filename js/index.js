@@ -13,6 +13,7 @@ $("#title").change(function(e) { //this function fires when the "other" option f
 
 $("#design").change(function(e) { //this controls what colors and themes appear depending on the option selected for the shirt size
     $("#color option").hide();
+    $("#color").val("");
     if(e.target.value == "js puns") {
         $(".cornflowerblue, .darkslategrey, .gold").show();
     } else if(e.target.value == "heart js") {
@@ -23,16 +24,19 @@ $("#design").change(function(e) { //this controls what colors and themes appear 
 $("input:checkbox").change(function(e) { // this function makes sure which times can and cannot be selected in conjunction together 
     const schedule = e.target.dataset.dayAndTime;
     if(e.target.checked) {
-        // the below 2 lines of code show dates and times of non conflicting selected options
-        $(`*[data-day-and-time="${schedule}"]`).parent().hide();
-        $(this).parent().show();
+        // the below 2 lines of code show dates and times of conflicting selected options
+        $(`*[data-day-and-time="${schedule}"]`).prop("disabled", true);
+        $(this).prop("disabled", false);
+        // $(`*[data-day-and-time="${schedule}"]`).hide();
+        // $(this).parent().show();
     } else {
         // the line below runs once a checkbox is unchecked 
-        $(`*[data-day-and-time="${schedule}"]`).parent().show();
+        $(`*[data-day-and-time="${schedule}"]`).prop("disabled", false);
+        // $(`*[data-day-and-time="${schedule}"]`).parent().show();
     }
 });
 //on page load, everything is hidden by default
-$("#credit-card, #paypal, #bitcoin").hide(); //these payment options are automatically hidden until an option is selected for payment 
+$("#paypal, #bitcoin").hide(); //these payment options are automatically hidden until an option is selected for payment 
 
 //function allows for each payment to show upon selection
 $("#payment").change(function(e) {
@@ -47,12 +51,21 @@ $("#payment").change(function(e) {
     }
 });
 
-$('#submitButton').click(function(e) { // this function allows you to submit as long as there are activity check boxes checked 
-    e.preventDefault(); //stops default action of submit button 
+$('#submitButton').click(function(e) { // this function allows you to submit as long as there are activity check boxes checked
+
     $(".errorMessage").remove();
-    
     let formIsValid = true; // assuming form is valid  
-    let dataElements = $('#name, #mail, #title, #size, #design, #color, #cc-num, #zip, #cvv'); 
+    let elementsToCheck = '#name, #mail, #title, #size, #design, #color';
+
+
+
+    if($("#payment").val() === "credit-card") {
+     let ccElements = ', #cc-num, #zip, #cvv'; 
+     elementsToCheck += ccElements; // appends the cc elements to the other elements (elementsToCheck) of the form for this specific use case 
+    //  console.log(elementsToCheck);  
+    }
+
+    let dataElements = $(elementsToCheck);
 
     dataElements.each(function(){ 
         let el = $(this); // in this scope, we're selecting jQuery list elements from the each loop, accesses current element that is selected 
@@ -77,6 +90,9 @@ $('#submitButton').click(function(e) { // this function allows you to submit as 
     if (!validationObj.checkBoxes(checkedCheckboxes, activityEl)) { // this function handles the checkboxes section differently than the previous functions handling the rest of the form in that 
         formIsValid = false;
     }
+    if(!formIsValid) {
+        e.preventDefault(); //stops default action of submit button 
+    }
     console.log("form is valid:", formIsValid);
 });
 
@@ -84,7 +100,7 @@ $('#submitButton').click(function(e) { // this function allows you to submit as 
 // if there's a string with a certain length, good, but if no length at all, shoot error
 let validationObj = {
     name: function(val, el){ // 
-        console.log("checking to see if is valid");
+        console.log("checking to see if name is valid");
         if(typeof val == "string" && val.length > 0){
             el.removeClass('error');
             return true;
